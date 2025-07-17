@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SyncTube Remote
 
 เว็บแอปพลิเคชันสำหรับเล่นเพลง YouTube แบบเรียลไทม์ร่วมกัน
@@ -52,3 +53,6 @@ YouTube Data API มี quota จำกัด:
 2. **Participants**: เข้าร่วมห้องและค้นหาเพลง
 3. **Search**: ใช้คำค้นหาหรือใส่ลิงก์ YouTube
 4. **Queue**: เพิ่มเพลงเข้าคิวแบบเรียลไทม์
+=======
+# synctube-remote
+>>>>>>> 13442afb18d7ae99558d0710ca64c9cc9e425475
