@@ -150,7 +150,7 @@ export default function HostRoom() {
       if (room && room.currentSong && room.queue.length === 0) {
         await updateRoom({
           ...room,
-          currentSong: null,
+          currentSong: undefined,
           isPlaying: false,
           currentTime: 0,
         })
@@ -186,7 +186,7 @@ export default function HostRoom() {
     try {
       await updateRoom({
         ...room,
-        currentSong: room.currentSong ? { ...room.currentSong, currentTime: time } : undefined,
+        currentSong: room.currentSong,
         currentTime: time, // Update the room's overall current time
       })
     } catch (error) {

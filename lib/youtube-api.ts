@@ -1,5 +1,7 @@
 // YouTube Data API utility functions
 
+import { env } from "@/lib/env"
+
 export interface YouTubeSearchResult {
   id: string
   title: string
@@ -55,109 +57,127 @@ function parseDuration(duration: string): string {
 
 // Search YouTube videos
 export async function searchYouTubeVideos(query: string, maxResults = 10): Promise<YouTubeSearchResult[]> {
-  const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
+  const API_KEYS = [env.YOUTUBE_API_KEY, env.YOUTUBE_API_KEY2].filter(Boolean)
+  const MAX_ATTEMPTS = 5 * API_KEYS.length
+  let lastError: any = null
 
-  if (!API_KEY) {
-    throw new Error("YouTube API key is not configured")
-  }
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const API_KEY = API_KEYS[i % API_KEYS.length]
+    try {
+      // Step 1: Search for videos
+      const searchUrl =
+        `https://www.googleapis.com/youtube/v3/search?` +
+        `part=snippet&` +
+        `q=${encodeURIComponent(query)}&` +
+        `type=video&` +
+        `maxResults=${maxResults}&` +
+        `key=${API_KEY}`
 
-  try {
-    // Step 1: Search for videos
-    const searchUrl =
-      `https://www.googleapis.com/youtube/v3/search?` +
-      `part=snippet&` +
-      `q=${encodeURIComponent(query)}&` +
-      `type=video&` +
-      `maxResults=${maxResults}&` +
-      `key=${API_KEY}`
+      const searchResponse = await fetch(searchUrl)
 
-    const searchResponse = await fetch(searchUrl)
-
-    if (!searchResponse.ok) {
-      if (searchResponse.status === 403) {
-        throw new Error("YouTube API quota exceeded or invalid API key")
+      if (!searchResponse.ok) {
+        if (searchResponse.status === 403) {
+          lastError = new Error("YouTube API quota exceeded or invalid API key")
+          continue // ลอง key ถัดไป
+        }
+        throw new Error(`YouTube API error: ${searchResponse.status}`)
       }
-      throw new Error(`YouTube API error: ${searchResponse.status}`)
-    }
 
-    const searchData: YouTubeApiResponse = await searchResponse.json()
+      const searchData: YouTubeApiResponse = await searchResponse.json()
 
-    if (!searchData.items || searchData.items.length === 0) {
-      return []
-    }
-
-    // Step 2: Get video durations
-    const videoIds = searchData.items.map((item) => item.id.videoId).join(",")
-    const detailsUrl =
-      `https://www.googleapis.com/youtube/v3/videos?` + `part=contentDetails&` + `id=${videoIds}&` + `key=${API_KEY}`
-
-    const detailsResponse = await fetch(detailsUrl)
-    const detailsData: YouTubeVideoDetailsResponse = await detailsResponse.json()
-
-    // Step 3: Combine search results with durations
-    const results: YouTubeSearchResult[] = searchData.items.map((item, index) => {
-      const duration = detailsData.items[index]?.contentDetails.duration || "PT0S"
-
-      return {
-        id: item.id.videoId,
-        title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.medium.url,
-        duration: parseDuration(duration),
-        channelTitle: item.snippet.channelTitle,
-        description: item.snippet.description,
-        publishedAt: item.snippet.publishedAt,
+      if (!searchData.items || searchData.items.length === 0) {
+        return []
       }
-    })
 
-    return results
-  } catch (error) {
-    console.error("YouTube API error:", error)
-    throw error
+      // Step 2: Get video durations
+      const videoIds = searchData.items.map((item) => item.id.videoId).join(",")
+      const detailsUrl =
+        `https://www.googleapis.com/youtube/v3/videos?` + `part=contentDetails&` + `id=${videoIds}&` + `key=${API_KEY}`
+
+      const detailsResponse = await fetch(detailsUrl)
+      if (!detailsResponse.ok) {
+        if (detailsResponse.status === 403) {
+          lastError = new Error("YouTube API quota exceeded or invalid API key")
+          continue // ลอง key ถัดไป
+        }
+        throw new Error(`YouTube API error: ${detailsResponse.status}`)
+      }
+      const detailsData: YouTubeVideoDetailsResponse = await detailsResponse.json()
+
+      // Step 3: Combine search results with durations
+      const results: YouTubeSearchResult[] = searchData.items.map((item, index) => {
+        const duration = detailsData.items[index]?.contentDetails.duration || "PT0S"
+
+        return {
+          id: item.id.videoId,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.medium.url,
+          duration: parseDuration(duration),
+          channelTitle: item.snippet.channelTitle,
+          description: item.snippet.description,
+          publishedAt: item.snippet.publishedAt,
+        }
+      })
+
+      return results
+    } catch (error) {
+      lastError = error
+    }
   }
+  // ถ้า quota หมดทุก key ทุกรอบ
+  console.error("YouTube API error:", lastError)
+  throw lastError || new Error("YouTube API error")
 }
 
 // Get video details by ID
 export async function getYouTubeVideoDetails(videoId: string): Promise<YouTubeSearchResult | null> {
-  const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
+  const API_KEYS = [env.YOUTUBE_API_KEY, env.YOUTUBE_API_KEY2].filter(Boolean)
+  const MAX_ATTEMPTS = 5 * API_KEYS.length
+  let lastError: any = null
 
-  if (!API_KEY) {
-    throw new Error("YouTube API key is not configured")
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const API_KEY = API_KEYS[i % API_KEYS.length]
+    try {
+      const url =
+        `https://www.googleapis.com/youtube/v3/videos?` +
+        `part=snippet,contentDetails&` +
+        `id=${videoId}&` +
+        `key=${API_KEY}`
+
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          lastError = new Error("YouTube API quota exceeded or invalid API key")
+          continue // ลอง key ถัดไป
+        }
+        throw new Error(`YouTube API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (!data.items || data.items.length === 0) {
+        return null
+      }
+
+      const item = data.items[0]
+
+      return {
+        id: item.id,
+        title: item.snippet.title,
+        thumbnail: item.snippet.thumbnails.medium.url,
+        duration: parseDuration(item.contentDetails.duration),
+        channelTitle: item.snippet.channelTitle,
+        description: item.snippet.description,
+        publishedAt: item.snippet.publishedAt,
+      }
+    } catch (error) {
+      lastError = error
+    }
   }
-
-  try {
-    const url =
-      `https://www.googleapis.com/youtube/v3/videos?` +
-      `part=snippet,contentDetails&` +
-      `id=${videoId}&` +
-      `key=${API_KEY}`
-
-    const response = await fetch(url)
-
-    if (!response.ok) {
-      throw new Error(`YouTube API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-
-    if (!data.items || data.items.length === 0) {
-      return null
-    }
-
-    const item = data.items[0]
-
-    return {
-      id: item.id,
-      title: item.snippet.title,
-      thumbnail: item.snippet.thumbnails.medium.url,
-      duration: parseDuration(item.contentDetails.duration),
-      channelTitle: item.snippet.channelTitle,
-      description: item.snippet.description,
-      publishedAt: item.snippet.publishedAt,
-    }
-  } catch (error) {
-    console.error("YouTube API error:", error)
-    throw error
-  }
+  // ถ้า quota หมดทุก key ทุกรอบ
+  console.error("YouTube API error:", lastError)
+  throw lastError || new Error("YouTube API error")
 }
 
 // Validate YouTube URL and extract video ID

@@ -20,6 +20,7 @@ export async function GET() {
     .from("rooms")
     .select("id, host_id, participants, created_at, updated_at")
     .order("updated_at", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(50)
 
   if (error) {

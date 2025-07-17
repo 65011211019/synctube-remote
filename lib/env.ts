@@ -3,6 +3,7 @@
 export const env = {
   // YouTube API
   YOUTUBE_API_KEY: process.env.NEXT_PUBLIC_YOUTUBE_API_KEY,
+  YOUTUBE_API_KEY2: process.env.NEXT_PUBLIC_YOUTUBE_API_KEY2,
 
   // Supabase
   SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
