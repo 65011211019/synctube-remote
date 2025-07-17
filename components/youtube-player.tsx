@@ -73,16 +73,16 @@ export function YouTubePlayer({
         return
       }
       if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
-        const tag = document.createElement("script")
-        tag.src = "https://www.youtube.com/iframe_api"
-        tag.async = true
-        document.head.appendChild(tag)
-      }
-      window.onYouTubeIframeAPIReady = initializePlayer
-    }
+    const tag = document.createElement("script")
+    tag.src = "https://www.youtube.com/iframe_api"
+    tag.async = true
+    document.head.appendChild(tag)
+  }
+  window.onYouTubeIframeAPIReady = initializePlayer
+}
 
     const initializePlayer = () => {
-      if (!containerRef.current) return
+  if (!containerRef.current) return
       const playerId = `youtube-player-${Date.now()}`
       containerRef.current.innerHTML = `<div id="${playerId}"></div>`
       playerRef.current = new window.YT.Player(playerId, {
@@ -101,35 +101,35 @@ export function YouTubePlayer({
         },
         events: {
           onReady: (event: any) => {
-            console.log("YouTube player ready")
-            setIsPlayerReady(true)
-            setPlayerError(null)
+  console.log("YouTube player ready")
+  setIsPlayerReady(true)
+  setPlayerError(null)
             setCurrentTime(0) // reset currentTime when player is ready for new song
-            event.target.setVolume(volume)
-            if (isMuted) event.target.mute()
-            if (currentSong)
-              event.target.loadVideoById(currentSong.videoId, initialTime)
+  event.target.setVolume(volume)
+  if (isMuted) event.target.mute()
+  if (currentSong)
+  event.target.loadVideoById(currentSong.videoId, initialTime)
           },
           onStateChange: (event: any) => {
-            console.log("Player state changed:", event.data)
+  console.log("Player state changed:", event.data)
             if (event.data === window.YT.PlayerState.ENDED) {
-              onEnded()
+  onEnded()
             } else if (event.data === window.YT.PlayerState.PLAYING) {
-              if (intervalRef.current) clearInterval(intervalRef.current)
+  if (intervalRef.current) clearInterval(intervalRef.current)
               intervalRef.current = setInterval(() => {
-                if (playerRef.current && !isSeeking)
-                  setCurrentTime(playerRef.current.getCurrentTime())
-                setDuration(playerRef.current.getDuration())
+  if (playerRef.current && !isSeeking)
+  setCurrentTime(playerRef.current.getCurrentTime())
+  setDuration(playerRef.current.getDuration())
               }, 1000)
             } else {
               if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-                intervalRef.current = null
+  clearInterval(intervalRef.current)
+  intervalRef.current = null
               }
             }
           },
           onError: (event: any) => {
-            console.error("YouTube player error:", event.data)
+  console.error("YouTube player error:", event.data)
             const errorMessages = {
               2: "วิดีโอ ID ไม่ถูกต้อง",
               5: "เกิดข้อผิดพลาดใน HTML5 player",
@@ -137,20 +137,20 @@ export function YouTubePlayer({
               101: "เจ้าของวิดีโอไม่อนุญาตให้เล่นในเว็บไซต์นี้",
               150: "เจ้าของวิดีโอไม่อนุญาตให้เล่นในเว็บไซต์นี้",
             }
-            setPlayerError(errorMessages[event.data as keyof typeof errorMessages] || "เกิดข้อผิดพลาดในการเล่นวิดีโอ")
+  setPlayerError(errorMessages[event.data as keyof typeof errorMessages] || "เกิดข้อผิดพลาดในการเล่นวิดีโอ")
           },
         },
       })
-    }
+}
 
-    loadYouTubeAPI()
+loadYouTubeAPI()
 
     return () => {
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
         try {
-          playerRef.current.destroy()
+  playerRef.current.destroy()
         } catch (error) {
-          console.error("Error destroying player:", error)
+  console.error("Error destroying player:", error)
         }
       }
       if (intervalRef.current) {
@@ -163,7 +163,7 @@ export function YouTubePlayer({
   useEffect(() => {
     if (!isPlayerReady || !playerRef.current || !currentSong?.videoId) return
     setCurrentTime(0) // reset currentTime when song changes
-    const currentVideoId = playerRef.current.getVideoData()?.video_id
+  const currentVideoId = playerRef.current.getVideoData()?.video_id
     if (currentVideoId !== currentSong.videoId) {
       console.log("Loading video:", currentSong.title, "at time: 0")
       playerRef.current.loadVideoById(currentSong.videoId, 0)
@@ -172,21 +172,21 @@ export function YouTubePlayer({
         console.log("Seeking to initial time: 0")
         playerRef.current.seekTo(0, true)
       }
-    }
+}
   }, [currentSong?.videoId, isPlayerReady])
 
   useEffect(() => {
-    if (!isPlayerReady || !playerRef.current || !currentSong) return
-    const currentState = playerRef.current.getPlayerState()
+  if (!isPlayerReady || !playerRef.current || !currentSong) return
+  const currentState = playerRef.current.getPlayerState()
     if (isPlaying && currentState !== window.YT.PlayerState.PLAYING) {
       console.log("Starting playback")
-      playerRef.current.playVideo()
+  playerRef.current.playVideo()
     } else {
       if (!isPlaying && currentState === window.YT.PlayerState.PLAYING) {
-        console.log("Pausing playback")
-        playerRef.current.pauseVideo()
+  console.log("Pausing playback")
+  playerRef.current.pauseVideo()
       }
-    }
+}
   }, [isPlaying, isPlayerReady, currentSong])
 
   // Auto-next after 5 seconds when song ends
@@ -206,25 +206,25 @@ export function YouTubePlayer({
   }, [currentTime, duration, isPlayerReady, hasNextSong, currentSong, onNext])
 
   const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume)
+  setVolume(newVolume)
     if (playerRef.current) {
-      playerRef.current.setVolume(newVolume)
+  playerRef.current.setVolume(newVolume)
     }
-    setIsMuted(newVolume === 0)
-  }
+  setIsMuted(newVolume === 0)
+}
 
   const toggleMute = () => {
     if (playerRef.current) {
       if (isMuted) {
-        playerRef.current.unMute()
+  playerRef.current.unMute()
         setVolume(playerRef.current.getVolume())
       } else {
-        playerRef.current.mute()
+  playerRef.current.mute()
         setVolume(0)
       }
-      setIsMuted(!isMuted)
+  setIsMuted(!isMuted)
     }
-  }
+}
 
   const handleSeekChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = Number(e.target.value)
@@ -241,7 +241,7 @@ export function YouTubePlayer({
     setIsSeeking(false)
   }, [onSeek])
 
-  return (
+return (
     <div className={className}>
       {/* Video Container */}
       <div className="aspect-video bg-black rounded-lg mb-4 relative overflow-hidden">
