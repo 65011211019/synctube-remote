@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark Red Theme */
+    --background: 220 10% 8%; /* Very dark gray with a hint of blue/purple for depth */
+    --foreground: 0 0% 95%; /* Off-white */
+
+    --card: 220 10% 12%; /* Slightly lighter dark gray for cards */
+    --card-foreground: 0 0% 95%;
+
+    --popover: 220 10% 12%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 80% 45%; /* A strong red */
+    --primary-foreground: 0 0% 98%; /* White */
+
+    --secondary: 220 10% 20%; /* Darker gray for secondary elements */
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 220 10% 20%;
+    --muted-foreground: 215 10% 60%; /* Lighter gray for muted text */
+
+    --accent: 0 90% 60%; /* Brighter red for accents */
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 80% 50%; /* Standard destructive red */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 10% 25%; /* Darker border */
+    --input: 220 10% 25%;
+    --ring: 0 80% 45%; /* Ring color matches primary */
+
+    --radius: 0.5rem;
+
+    /* Chart colors (optional, keep default or adjust) */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  /* Ensure dark mode is always active for this theme */
+  .dark {
+    --background: 220 10% 8%;
+    --foreground: 0 0% 95%;
+    --card: 220 10% 12%;
+    --card-foreground: 0 0% 95%;
+    --popover: 220 10% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 80% 45%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 10% 20%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 220 10% 20%;
+    --muted-foreground: 215 10% 60%;
+    --accent: 0 90% 60%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 10% 25%;
+    --input: 220 10% 25%;
+    --ring: 0 80% 45%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar for webkit browsers */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: hsl(var(--secondary));
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent));
+}
+
+/* YouTube player responsive */
+.youtube-player-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.youtube-player-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
